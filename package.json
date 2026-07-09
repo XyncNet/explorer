@@ -1,0 +1,23 @@
+{
+  "name": "xync-explorer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Обозреватель блокчейна Xync Network + web3-кошелёк (etherscan-стиль)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist -t"
+  },
+  "dependencies": {
+    "@noble/curves": "^2.2.0",
+    "@noble/hashes": "^2.2.0",
+    "@scure/bip39": "^2.2.0"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.5"
+  }
+}
