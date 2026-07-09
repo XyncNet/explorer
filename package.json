@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && gh-pages -d dist -t"
+    "deploy": "npm run build && npx -y gh-pages@6 -d dist -t"
   },
   "dependencies": {
     "@noble/curves": "^2.2.0",
@@ -16,7 +16,6 @@
     "@scure/bip39": "^2.2.0"
   },
   "devDependencies": {
-    "gh-pages": "^6.3.0",
     "typescript": "^5.9.3",
     "vite": "^7.1.5"
   }

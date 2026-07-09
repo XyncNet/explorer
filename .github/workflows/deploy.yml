@@ -1,0 +1,62 @@
+# Авто-деплой обозревателя на GitHub Pages при пуше в main.
+# Репозиторий standalone (XyncNet/explorer) — собираем из корня.
+#
+# Разовая настройка в репозитории:
+#   • Settings → Pages → Source = GitHub Actions
+#   • Settings → Secrets and variables → Actions → Variables:
+#       VITE_N1   — публичный URL api-ноды L1 (напр. https://api.xync.net). ОБЯЗАТЕЛЬНО:
+#                   на Pages нет dev-прокси, обозреватель ходит на ноду напрямую (CORS уже включён).
+#       VITE_N2..4 — доп. валидаторы для селектора (необязательно).
+#       BASE_PATH — по умолчанию '/<имя-репо>/' (напр. /explorer/) для project-страницы
+#                   <owner>.github.io/explorer. Для кастомного домена задайте '/'.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm build
+        env:
+          # база: '/<repo>/' по умолчанию; переопределяется переменной BASE_PATH
+          BASE_PATH: ${{ vars.BASE_PATH || format('/{0}/', github.event.repository.name) }}
+          VITE_N1: ${{ vars.VITE_N1 }}
+          VITE_N2: ${{ vars.VITE_N2 }}
+          VITE_N3: ${{ vars.VITE_N3 }}
+          VITE_N4: ${{ vars.VITE_N4 }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

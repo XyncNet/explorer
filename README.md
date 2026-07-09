@@ -22,31 +22,52 @@ ed25519 выполняется во вкладке — приватный клю
 ## Быстрый старт (локально)
 
 ```bash
-# 1) поднять локальную сеть валидаторов (из корня проекта)
+# 1) поднять локальную сеть валидаторов (в репозитории ноды XyncNetwork)
 python3 scripts/run_local.py --validators 4      # api: v1=7105 … v4=7405
 
-# 2) обозреватель
-cd explorer
-npm install
-npm run dev            # http://localhost:5280
+# 2) обозреватель (этот репозиторий)
+pnpm install
+pnpm dev              # http://localhost:5280
 ```
 
 Переключение между валидаторами — селектор в шапке (n1…n4). Для теста кошелька
 подключите любой `wallets/*.json` из проекта (например alice = аккаунт #6).
 
-### Продакшн-ноды
+## Деплой (GitHub Pages)
 
-Адреса api-нод задаются через окружение (`.env`), CORS не требуется — dev-сервер
-проксирует их под same-origin путь `/n1…/n4`:
+**Ключевое отличие от dev:** на Pages нет dev-прокси, поэтому обозреватель ходит
+на api-ноду **напрямую** по полному URL. Это работает, потому что на ноде уже
+включён CORS. Прод-URL нод задаются через `VITE_N1…VITE_N4` (в DEV эти переменные
+игнорируются — там используется прокси `/n1…/n4`).
 
+### Вариант A — авто-деплой через GitHub Actions (при пуше в main)
+
+Workflow: `.github/workflows/deploy.yml` (standalone-репозиторий `XyncNet/explorer`,
+сборка pnpm из корня). Разово настроить:
+
+1. **Settings → Pages → Source = GitHub Actions.**
+2. **Settings → Secrets and variables → Actions → Variables:**
+   - `VITE_N1` = URL публичной L1-ноды (напр. `https://api.xync.net`) — **обязательно**;
+   - `VITE_N2…VITE_N4` — доп. валидаторы для селектора (необязательно);
+   - `BASE_PATH` — по умолчанию `/explorer/` (project-страница `<owner>.github.io/explorer`);
+     для кастомного домена задайте `/`.
+3. Пуш в `main` — сборка и публикация автоматически.
+
+### Вариант B — по команде (gh-pages)
+
+```bash
+BASE_PATH=/explorer/ npm run deploy   # build + push в ветку gh-pages (gh-pages тянется через npx)
 ```
-VITE_N1=https://api.xync.net
-VITE_N2=https://api2.xync.net
-```
 
-`npm run build` → статика в `dist/`. При деплое поставьте `dist/` за reverse-proxy,
-который отдаёт `/n1/*` на api-ноду (пример nginx — в конце файла), **или**
-включите CORS на ноде (опциональный патч ниже).
+Затем **Settings → Pages → Source = Deploy from a branch → gh-pages**.
+Для кастомного домена (напр. `explorer.xync.net`) задайте `BASE_PATH=/` и положите
+файл `public/CNAME` с доменом — он попадёт в `dist/` и Pages подхватит его.
+
+### Прод-URL нод вручную (локальная прод-сборка)
+
+```bash
+BASE_PATH=/ VITE_N1=https://api.xync.net npm run build   # dist/ готов к раздаче любой статикой
+```
 
 ## Совместимость с протоколом (проверено)
 
