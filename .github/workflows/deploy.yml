@@ -41,8 +41,7 @@ jobs:
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm build
         env:
-          # база: '/<repo>/' по умолчанию; переопределяется переменной BASE_PATH
-          BASE_PATH: ${{ vars.BASE_PATH || format('/{0}/', github.event.repository.name) }}
+          BASE_PATH: ${{ vars.BASE_PATH || '/' }}
           VITE_N1: ${{ vars.VITE_N1 }}
           VITE_N2: ${{ vars.VITE_N2 }}
           VITE_N3: ${{ vars.VITE_N3 }}
